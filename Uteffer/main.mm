@@ -35,7 +35,15 @@ auto euro16_le  = std::vector<char16_t>{ 0xFFFE, 0xAC20, 0x0000 };
 
 void printStr( std::string s, std::string label )
 {
-    std::cout << label << " = '" << s << "', size = " << s.size() << ", empty = " << s.empty() << std::endl;
+    std::cout << label << " = '" << s << "', size = " << s.size() << ", empty = " << s.empty() << " ( ";
+    
+    for ( auto c : s )
+    {
+        std::cout << std::showbase << std::hex << int( uint8_t( c ) ) << " ";
+    }
+    
+    std::cout << ")" << std::endl;
+    std::cout << std::noshowbase << std::dec;
 }
 
 template <typename Container>
@@ -66,15 +74,15 @@ void printNSString()
     
     std::cout << "-- NSString --" << std::endl;
 
-    printStr( sEmpty8_le,  "Empty8_le " );
+    printStr( sEmpty8_be,  "Empty8_be " );
     printStr( sEmpty16_be, "Empty16_be" );
-    printStr( sEuro8_le,   "Euro8_le  " );
+    printStr( sEuro8_be,   "Euro8_be  " );
     printStr( sEuro16_be,  "Euro16_be " );
     std::cout << std::endl;
 
-    printStr( sEmpty8_be,  "Empty8_be " );
+    printStr( sEmpty8_le,  "Empty8_le " );
     printStr( sEmpty16_le, "Empty16_le" );
-    printStr( sEuro8_be,   "Euro8_be  " );
+    printStr( sEuro8_le,   "Euro8_le  " );
     printStr( sEuro16_le,  "Euro16_le " );
 
     std::cout << std::endl;
@@ -86,16 +94,17 @@ void printWithMode()
     using toUtf16 = std::codecvt_utf8_utf16< char16_t, 0x10ffff, Mode >;
     std::wstring_convert< toUtf16, char16_t > cnv;
 
-    //  NOTE: The _be/_le labeling here to indicate Big/Little endian refers strictly to the original byte array.
+    //  NOTE: The _be/_le labeling here (to indicate Big/Little endian) on the strings refers to how the data
+    //  will be interpreted after casting to char16_t.
     //  Just performing the cast here without properly byte-swapping the underlying data means that the
     //  endianness will be reversed (on Little Endian hardware). For my purposes though that should be irrelevant.
     //  To properly convert UTF-16 data you must look at the BOM to determine the endianness. So whether it's
     //  byte-swapped or not doesn't matter, the converter should look at the BOM & handle it properly.
-    auto sEmpty8_be = cnv.to_bytes( reinterpret_cast<const char16_t *>( empty8_be.data() ) );
-    auto sEmpty8_le = cnv.to_bytes( reinterpret_cast<const char16_t *>( empty8_le.data() ) );
-    auto sEuro8_be = cnv.to_bytes( reinterpret_cast<const char16_t *>( euro8_be.data() ) );
-    auto sEuro8_le = cnv.to_bytes( reinterpret_cast<const char16_t *>( euro8_le.data() ) );
-    
+    auto sEmpty8_be = cnv.to_bytes( reinterpret_cast<const char16_t *>( empty8_le.data() ) );
+    auto sEmpty8_le = cnv.to_bytes( reinterpret_cast<const char16_t *>( empty8_be.data() ) );
+    auto sEuro8_be = cnv.to_bytes( reinterpret_cast<const char16_t *>( euro8_le.data() ) );
+    auto sEuro8_le = cnv.to_bytes( reinterpret_cast<const char16_t *>( euro8_be.data() ) );
+
     auto sEmpty16_be = cnv.to_bytes( empty16_be.data() );
     auto sEmpty16_le = cnv.to_bytes( empty16_le.data() );
     auto sEuro16_be = cnv.to_bytes( euro16_be.data() );
@@ -104,16 +113,18 @@ void printWithMode()
     std::cout << "-- Mode = " << Mode << " --" << std::endl;
     
     //  Output Correctly
-    printStr( sEmpty8_le,  "Empty8_le " );
+    std::cout << "Correct:" << std::endl;
+    printStr( sEmpty8_be,  "Empty8_be " );
     printStr( sEmpty16_be, "Empty16_be" );
-    printStr( sEuro8_le,   "Euro8_le  " );
+    printStr( sEuro8_be,   "Euro8_be  " );
     printStr( sEuro16_be,  "Euro16_be " );
     std::cout << std::endl;
 
     //  Output Incorrectly
-    printStr( sEmpty8_be,  "Empty8_be " );
+    std::cout << "Incorrect:" << std::endl;
+    printStr( sEmpty8_le,  "Empty8_le " );
     printStr( sEmpty16_le, "Empty16_le" );
-    printStr( sEuro8_be,   "Euro8_be  " );
+    printStr( sEuro8_le,   "Euro8_le  " );
     printStr( sEuro16_le,  "Euro16_le " );
 
     std::cout << std::endl;
