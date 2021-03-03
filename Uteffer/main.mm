@@ -10,8 +10,9 @@
 #include <vector>
 #include <locale>
 
-#import <Foundation/Foundation.h>
-
+#ifdef __OBJC__
+#   import <Foundation/Foundation.h>
+#endif
 
 //  -- Byte Arrays starting with a "byte order mark" (BOM) --
 //  Big Endian byte array              v- BOM --v  v- NULL -v
@@ -24,13 +25,13 @@ auto euro8_be  = std::vector<uint8_t>{ 0xFE, 0xFF, 0x20, 0xAC, 0x00, 0x00 };
 auto euro8_le  = std::vector<uint8_t>{ 0xFF, 0xFE, 0xAC, 0x20, 0x00, 0x00 };
 
 //  -- 16-bit Arrays starting with BOM --
-//  Big Endian                            BOM     NULL
+//  Big Endian - Empty String             BOM     NULL
 auto empty16_be = std::vector<char16_t>{ 0xFEFF, 0x0000 };
-//  Little Endian                         BOM     NULL
+//  Little Endian  - Empty String         BOM     NULL
 auto empty16_le = std::vector<char16_t>{ 0xFFFE, 0x0000 };
-//  Big Endian                            BOM     Euro    NULL
+//  Big Endian - Euro Char                BOM     Euro    NULL
 auto euro16_be  = std::vector<char16_t>{ 0xFEFF, 0x20AC, 0x0000 };
-//  Little Endian                         BOM     Euro    NULL
+//  Little Endian - Euro Char             BOM     Euro    NULL
 auto euro16_le  = std::vector<char16_t>{ 0xFFFE, 0xAC20, 0x0000 };
 
 void printStr( std::string s, std::string label )
@@ -45,6 +46,8 @@ void printStr( std::string s, std::string label )
     std::cout << ")" << std::endl;
     std::cout << std::noshowbase << std::dec;
 }
+
+#ifdef __OBJC__
 
 template <typename Container>
 std::string utf16ToUtf8( const Container & data )
@@ -87,6 +90,8 @@ void printNSString()
 
     std::cout << std::endl;
 }
+
+#endif  //  #ifdef __OBJC__
 
 template <std::codecvt_mode Mode>
 void printWithMode()
@@ -135,7 +140,9 @@ int main(int argc, const char * argv[])
     printWithMode<std::codecvt_mode::little_endian>();
     printWithMode<std::codecvt_mode::consume_header>();
 
+#ifdef __OBJC__
     printNSString();
+#endif
     
     return 0;
 }
